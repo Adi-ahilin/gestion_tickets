@@ -1,0 +1,30 @@
+.admin-layout { background: #f8f9fa; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+.admin-header { background: #d63384; padding: 1rem 2rem; color: white; display: flex; justify-content: space-between; align-items: center; }
+.admin-title { font-weight: 700; font-size: 1.2rem; }
+
+.admin-content { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+/* Stats Cards */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.stat-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.stat-label { font-size: 0.85rem; color: #6c757d; font-weight: 600; }
+.stat-value { font-size: 1.8rem; font-weight: 700; margin-top: 5px; }
+.stat-icon { font-size: 1.5rem; }
+
+.text-green { color: #28a745; } .text-yellow { color: #ffc107; } .text-blue { color: #0d6efd; } .text-purple { color: #6f42c1; }
+
+/* Buscador */
+.search-bar { background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; margin-bottom: 2rem; }
+.search-input { flex: 1; border: none; padding: 8px; outline: none; font-size: 1rem; }
+.btn-search { background: #d63384; color: white; border: none; padding: 8px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+/* Tabla */
+.orders-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.orders-table th { background: #f8f9fa; color: #6c757d; font-size: 0.75rem; text-transform: uppercase; padding: 1rem; text-align: left; }
+.orders-table td { padding: 1rem; border-bottom: 1px solid #f1f1f1; font-size: 0.9rem; color: #333; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.badge.pendiente { background: #fff3cd; color: #856404; }
+.badge.confirmada { background: #d4edda; color: #155724; }
+
+.btn-confirm { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+.btn-details { background: #e9ecef; color: #495057; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
