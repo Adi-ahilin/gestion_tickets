@@ -1,15 +1,48 @@
-import { EstadoOrden, EstadoTicket } from '../core/types';
+import { EstadoOrden, PRECIO_PREVENTA, PRECIO_GENERAL, FECHA_LIMITE_PREVENTA } from '../core/types';
 
 export const validateTicketSimulated = async (type) => {
     const responses = {
-        valid: { status: 'VÁLIDO', message: 'Ticket aceptado. ¡Bienvenido!' },
-        used: { status: 'YA USADO', message: 'Este ticket ya fue utilizado.' },
+        valid:   { status: 'VÁLIDO',   message: 'Ticket aceptado. ¡Bienvenido!' },
+        used:    { status: 'YA USADO', message: 'Este ticket ya fue utilizado.' },
         invalid: { status: 'INVÁLIDO', message: 'Ticket no válido o expirado.' }
     };
+    // normaliza entrada y retorna la respuesta simulada
     return responses[type] || responses.invalid;
 };
 
-// --- MOCK DE DATOS ---
+/**
+ * Determina el precio del ticket basado en la fecha actual.
+ * Compara contra la fecha límite de preventa definida en types.js.
+ */
+export const getCurrentTicketPrice = () => {
+    const today = new Date();
+    // Si la fecha actual es menor o igual a la fecha límite, aplica preventa
+    return today <= FECHA_LIMITE_PREVENTA ? PRECIO_PREVENTA : PRECIO_GENERAL;
+};
+
+/**
+ * Simula la creación de una orden en el backend.
+ * Recibe los datos del formulario, calcula el total y retorna la orden creada.
+ */
+export const createOrder = async (data) => {
+    // Simula una pequeña demora de red (800ms) para dar realismo a la UI
+    await new Promise(resolve => setTimeout(resolve, 800)); 
+    
+    // Calcula monto final asegurando que el precio sea el del servidor (simulado)
+    const precioUnitario = getCurrentTicketPrice();
+    const monto = data.cantidad_tickets * precioUnitario;
+
+    // Construye el objeto de la orden
+    return {
+        id: `DANZA2025-${Math.floor(Math.random() * 8999) + 1000}`, // Genera ID tipo DANZA2025-XXXX
+        ...data, // nombre, email, cantidad_tickets, metodo_pago
+        monto_total: monto,
+        estado: EstadoOrden.PENDIENTE,
+        fecha_creacion: new Date()
+    };
+};
+
+// --- MOCK DE DATOS (Coincidiendo con tu diseño visual) ---
 export const mockOrders = [
     {
         id: 'DANZA2025-0001',
@@ -41,7 +74,6 @@ export const mockOrders = [
         estado: EstadoOrden.PENDIENTE,
         fecha_confirmacion: null,
     },
-    // Orden extra para probar paginación o scroll
     {
         id: 'DANZA2025-0004',
         comprador: 'Carlos Díaz',
@@ -52,25 +84,18 @@ export const mockOrders = [
         estado: EstadoOrden.CONFIRMADA,
         fecha_confirmacion: new Date(),
     }
-    
 ];
 
-export const mockTickets = [
-    // Datos simulados para el escáner (no afectan esta vista directamente)
-    { id: 1, orden_id: 'DANZA2025-0002', codigo_hash: 'QR-VALID-101', estado: EstadoTicket.VIGENTE, fecha_uso: null },
-];
+// --- FUNCIONES LÓGICAS ---
 
-// --- FUNCIONES DE LÓGICA DE NEGOCIO ---
-
-// Obtener todas las órdenes
 export const getAllOrders = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Simula carga de datos
+    await new Promise(resolve => setTimeout(resolve, 300));
     return [...mockOrders];
 };
 
-// Buscar órdenes por ID, Nombre o Email
 export const findOrders = async (query) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 300));
     if (!query) return mockOrders;
 
     const lowerQuery = query.toLowerCase();
@@ -81,9 +106,8 @@ export const findOrders = async (query) => {
     );
 };
 
-// Confirmar pago
 export const confirmPayment = async (orderId) => {
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 500));
     const orderIndex = mockOrders.findIndex(o => o.id === orderId);
     
     if (orderIndex !== -1 && mockOrders[orderIndex].estado === EstadoOrden.PENDIENTE) {
@@ -94,12 +118,11 @@ export const confirmPayment = async (orderId) => {
     return null;
 };
 
-// Calcular estadísticas en tiempo real
 export const getDashboardStats = async () => {
     await new Promise(resolve => setTimeout(resolve, 300));
     
     const totalCapacidad = 250; 
-    let vendidas = 0; // Órdenes confirmadas (o tickets, depende de regla de negocio)
+    let vendidas = 0;
     let pendientes = 0;
     let ingresos = 0;
     let ticketsOcupados = 0;
@@ -115,14 +138,14 @@ export const getDashboardStats = async () => {
     });
 
     return {
-        vendidas: ticketsOcupados, // Mostramos tickets vendidos o transacciones vendidas según prefieras
-        pendientes, // Transacciones pendientes
+        vendidas: vendidas, // Cantidad de órdenes exitosas
+        pendientes, 
         disponibles: totalCapacidad - ticketsOcupados,
         ingresos
     };
 };
 
-// Funciones placeholder para compatibilidad con otros módulos
+// Placeholders para evitar errores de importación en otros archivos
 export const runExpirationCheck = async () => [];
 export const runReminderEmailSender = async () => [];
 export const validateTicketAccess = async () => ({ status: 'INVÁLIDO' });
