@@ -1,0 +1,18 @@
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* Fondo con gradiente */
+    background: linear-gradient(180deg, #e0b0ff 0%, #f8f0ff 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}

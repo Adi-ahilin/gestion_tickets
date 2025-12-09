@@ -1,0 +1,307 @@
+/* Contenedor Principal */
+.reservation-container {
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', sans-serif;
+    color: #333;
+}
+
+/* Header Violeta del Portal */
+.portal-header {
+    background-color: #a855f7; /* Violeta vibrante */
+    color: white;
+    padding: 15px 20px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.portal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-home-small {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-home-small:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Tarjeta de Evento */
+.event-info-card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    text-align: center;
+    border: 1px solid #f0f0f0;
+}
+
+.event-title {
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.icon-purple {
+    color: #a855f7;
+}
+
+/* Alerta de Preventa (Caja Verde) */
+.promo-box {
+    background-color: #ecfdf5; /* Verde muy claro */
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+    max-width: 600px;
+}
+
+.promo-title {
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Stepper (Pasos 1-2-3) */
+.stepper-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.step-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    background-color: #e5e7eb; /* Gris por defecto */
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.step-circle.active {
+    background-color: #9333ea; /* Violeta oscuro */
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+}
+
+.step-line {
+    width: 60px;
+    height: 3px;
+    background-color: #e5e7eb;
+    margin: 0 10px;
+}
+
+.step-line.filled {
+    background-color: #9333ea;
+}
+
+/* Formulario y Contenido */
+.form-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+.input-field, .select-field {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.input-field:focus, .select-field:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* Caja de Total a Pagar */
+.total-box {
+    background-color: #f3e8ff; /* Violeta muy claro */
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.total-amount {
+    color: #6b21a8;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.total-detail {
+    color: #9333ea;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+/* Botones */
+.btn-continue {
+    width: 100%;
+    background-color: #9333ea;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-continue:hover {
+    background-color: #7e22ce;
+}
+
+.btn-back-gray {
+    background-color: #e5e7eb;
+    color: #374151;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Selección de Pago */
+.payment-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.payment-option.selected {
+    border-color: #9333ea;
+    background-color: #faf5ff;
+}
+
+.radio-custom {
+    margin-top: 3px;
+    margin-right: 12px;
+    accent-color: #9333ea;
+}
+
+/* Confirmación */
+.success-icon-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.check-circle {
+    width: 60px;
+    height: 60px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+.success-title {
+    text-align: center;
+    color: #15803d;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+}
+
+.order-id-box {
+    background-color: #f9fafb;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.order-code {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #4b5563;
+    letter-spacing: 1px;
+}
+
+.warning-box {
+    background-color: #fefce8;
+    border: 1px solid #fef08a;
+    color: #854d0e;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 20px;
+}
