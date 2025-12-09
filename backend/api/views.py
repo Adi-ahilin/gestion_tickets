@@ -76,3 +76,41 @@ def crear_orden(request):
             {"error": str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    # --- Agrega esto al final de backend/api/views.py ---
+
+@api_view(['GET'])
+def listar_ordenes(request):
+    # Traemos todas las órdenes, las más nuevas primero
+    ordenes = OrdenCompra.objects.all().order_by('-id') 
+    serializer = OrdenCompraSerializer(ordenes, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def confirmar_pago(request, orden_id):
+    try:
+        # Buscamos la orden por su ID
+        orden = OrdenCompra.objects.get(id=orden_id)
+        orden.estado = 'CONFIRMADA' # Asegúrate que este string coincida con tus modelos
+        orden.save()
+        return Response({'mensaje': 'Pago confirmado exitosamente'})
+    except OrdenCompra.DoesNotExist:
+        return Response({'error': 'Orden no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    
+# --- Pega esto al final de backend/api/views.py ---
+
+@api_view(['GET'])
+def listar_ordenes(request):
+    # Trae todas las órdenes, las más nuevas primero
+    ordenes = OrdenCompra.objects.all().order_by('-id') 
+    serializer = OrdenCompraSerializer(ordenes, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def confirmar_pago(request, orden_id):
+    try:
+        orden = OrdenCompra.objects.get(id=orden_id)
+        orden.estado = 'CONFIRMADA' 
+        orden.save()
+        return Response({'mensaje': 'Pago confirmado exitosamente'})
+    except OrdenCompra.DoesNotExist:
+        return Response({'error': 'Orden no encontrada'}, status=status.HTTP_404_NOT_FOUND)
