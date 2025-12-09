@@ -9,18 +9,11 @@ import uuid # Librería para generar IDs largos y únicos (ej: 550e8400-e29b...)
 # Representa a la persona que entra a la web y hace la reserva.
 # ---------------------------------------------------------
 class Comprador(models.Model):
-    # Campos de texto (CharField) para nombre y apellido
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    
-    # EmailField valida automáticamente que sea un correo real (@).
     # unique=True: Impide que dos personas se registren con el mismo correo.
     email = models.EmailField(unique=True)
-    
     telefono = models.CharField(max_length=20)
-    
-    # auto_now_add=True: Django guarda la fecha/hora exacta automáticamente
-    # en el momento en que se crea el registro. No hay que enviarla manual.
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     # Esta función define cómo se ve el objeto en el panel de administración.
@@ -33,8 +26,7 @@ class Comprador(models.Model):
 # Es la "boleta" o transacción que agrupa los tickets.
 # ---------------------------------------------------------
 class OrdenCompra(models.Model):
-    # Definimos las opciones fijas para el estado de la orden (Lista desplegable)
-    # El primer valor es para la base de datos, el segundo es para leerlo en humano.
+    
     ESTADOS = [
         ('PENDIENTE', 'Pendiente'),     # Recién creada
         ('CONFIRMADA', 'Confirmada'),   # Dueña revisó el banco y aprobó
