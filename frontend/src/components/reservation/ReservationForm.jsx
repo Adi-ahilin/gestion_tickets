@@ -1,97 +1,185 @@
 import React, { useState } from 'react';
-import '../../styles/components/button.css';
-import '../../styles/base.css';
-
-// 1. IMPORTAMOS LA API REAL (Esto es lo que faltaba)
 import { createOrder, getCurrentTicketPrice } from '../../api/reservationApi';
+import { FECHA_EVENTO, HORA_EVENTO, PRECIO_PREVENTA } from '../../core/types';
+import '../../styles/pages/ReservationForm.css';
 
 const ReservationForm = ({ onNavigate }) => {
-    const [formData, setFormData] = useState({ nombre: '', email: '', cantidad: 1 });
-    const [loading, setLoading] = useState(false); // Para deshabilitar el botón mientras carga
+    // Estado del formulario y la reserva
+    const [step, setStep] = useState(1);
+    const [data, setData] = useState({ 
+        nombre: '', 
+        email: '', 
+        cantidad: 1, // Inicializado como número
+        metodo: 'Transferencia Bancaria'
+    });
+    const [order, setOrder] = useState(null); 
+    const [loading, setLoading] = useState(false); 
 
-    // 2. Usamos el precio real de la API
+    // Lógica de negocio
     const precio = getCurrentTicketPrice();
+    const isPreventa = precio === PRECIO_PREVENTA;
+    const totalPagar = data.cantidad * precio; 
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true); // Bloqueamos el botón
+    const handleChange = (e) => {
+        const { value, name } = e.target;
+        setData(prev => ({
+            ...prev,
+            [name]: name === 'cantidad' ? parseInt(value) : value // Aseguramos que 'cantidad' sea entero
+        }));
+    };
 
+
+    const handleNext = () => {
+        // Validación básica para el paso 1
+        if(step === 1 && (!data.nombre || !data.email || data.cantidad <= 0)) {
+             alert("Por favor complete los datos obligatorios.");
+             return;
+        }
+        setStep(step + 1);
+    };
+
+    const handleConfirm = async () => {
+        setLoading(true);
         try {
-            // 3. Llamamos a la función real que conecta con Django
-            // Nota: enviamos 'cantidad_tickets' porque así lo espera nuestra reservationApi
-            await createOrder({
-                nombre: formData.nombre,
-                email: formData.email,
-                cantidad_tickets: formData.cantidad 
-            });
-
-            // Si no da error, mostramos éxito
-            alert(`✅ ¡Reserva Exitosa!\nTe hemos enviado un correo a ${formData.email}`);
-            onNavigate('dashboard');
-
+            // Llama a la API (que ahora es robusta)
+            const newOrder = await createOrder(data);
+            setOrder(newOrder);
+            setStep(3); // Pasa al paso de confirmación exitosa
         } catch (error) {
-            // Si falla, mostramos el error real
-            console.error(error);
-            alert("❌ Hubo un error al procesar tu reserva. Revisa la consola para más detalles.");
+            console.error("Error al confirmar reserva:", error);
+            alert("Hubo un error al procesar la reserva. Por favor, intente de nuevo.");
         } finally {
-            setLoading(false); // Desbloqueamos el botón
+            setLoading(false);
         }
     };
 
-    return (
-        <div className="panel-container" style={{background: 'white', padding: '30px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', maxWidth: '600px', width: '100%'}}>
-            <button className="btn-back" onClick={() => onNavigate('dashboard')} disabled={loading}>
-                ← Volver al Inicio
-            </button>
-            <h2 style={{color: '#4a0e8f', textAlign: 'center', marginBottom: '20px'}}>Portal de Compra</h2>
-            
-            <form onSubmit={handleSubmit}>
-                <label>Nombre Completo:</label>
-                <input 
-                    className="form-input" 
-                    style={{width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd'}}
-                    type="text" 
-                    value={formData.nombre}
-                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                    required
-                    disabled={loading}
-                />
+    // --- Sub-componentes visuales ---
 
-                <label>Email:</label>
-                <input 
-                    className="form-input" 
-                    style={{width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd'}}
-                    type="email" 
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    required
-                    disabled={loading}
-                />
-
-                <label>Cantidad:</label>
-                <select 
-                    className="form-select" 
-                    style={{width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd'}}
-                    value={formData.cantidad}
-                    onChange={(e) => setFormData({...formData, cantidad: parseInt(e.target.value)})}
-                    disabled={loading}
-                >
-                    {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-
-                <div style={{padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '8px', marginBottom: '20px'}}>
-                    <strong>Total a Pagar: </strong> ${(formData.cantidad * precio).toLocaleString('es-CL')}
+    const EventInfoCard = () => (
+        <div className="event-card">
+            <h2 className="event-title">Gala Anual 2025 - Academia de Danza</h2>
+            <div className="event-info-row">
+                <span><span className="info-icon">📅</span> {FECHA_EVENTO}</span>
+                <span><span className="info-icon">🕒</span> {HORA_EVENTO}</span>
+                <span><span className="info-icon">👥</span> 250 entradas disponibles</span>
+            </div>
+            {isPreventa && (
+                <div className="preventa-alert">
+                    <strong>🎉 ¡Preventa Activa!</strong><br/>
+                    Precio especial: ${precio.toLocaleString('es-CL')} hasta el 10/12/2025
                 </div>
+            )}
+        </div>
+    );
 
-                <button 
-                    type="submit" 
-                    className="btn btn-primary" 
-                    disabled={loading}
-                    style={{opacity: loading ? 0.6 : 1, cursor: loading ? 'wait' : 'pointer'}}
+    const Stepper = () => (
+        <div className="stepper">
+            <div className={`step-item ${step >= 1 ? 'step-bg-active' : 'step-bg-inactive'}`}>1</div>
+            <div className={`step-connector ${step >= 2 ? 'active' : ''}`}></div>
+            <div className={`step-item ${step >= 2 ? 'step-bg-active' : 'step-bg-inactive'}`}>2</div>
+            <div className={`step-connector ${step >= 3 ? 'active' : ''}`}></div>
+            <div className={`step-item ${step >= 3 ? 'step-bg-active' : 'step-bg-inactive'}`}>3</div>
+        </div>
+    );
+
+    // Paso 1: Datos del Comprador
+    const renderStep1 = () => (
+        <>
+            <h3 className="form-title">Datos del Comprador</h3>
+            <label className="input-label">Nombre y Apellido *</label>
+            <input className="input-control" name="nombre" placeholder="Ej: María González" value={data.nombre} onChange={handleChange} />
+            
+            <label className="input-label">Email *</label>
+            <input className="input-control" name="email" type="email" placeholder="correo@ejemplo.com" value={data.email} onChange={handleChange} />
+            
+            <label className="input-label">Cantidad de Tickets *</label>
+            <select className="input-control" name="cantidad" value={data.cantidad} onChange={handleChange}>
+                {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} ticket(s)</option>)}
+            </select>
+            
+            <div className="total-pay-box">
+                <div className="total-label">Total a pagar: ${totalPagar.toLocaleString('es-CL')}</div>
+                <div className="total-desc">Precio {isPreventa ? 'preventa' : 'general'}: ${precio.toLocaleString('es-CL')} por ticket</div>
+            </div>
+            <button className="btn-next" onClick={handleNext}>Continuar</button>
+        </>
+    );
+
+    // Paso 2: Método de Pago
+    const renderStep2 = () => (
+        <>
+            <h3 className="form-title">Método de Pago</h3>
+            <div style={{marginBottom:'20px'}}>
+                <label 
+                    className={`payment-option ${data.metodo === 'Transferencia Bancaria' ? 'selected' : ''}`}
+                    onClick={() => setData({...data, metodo:'Transferencia Bancaria'})}
                 >
-                    {loading ? 'Procesando...' : 'Confirmar Reserva'}
+                    <input type="radio" name="pay" checked={data.metodo === 'Transferencia Bancaria'} readOnly className="radio-custom" />
+                    <div><strong>Transferencia Bancaria</strong><br/><small style={{color:'#6b7280'}}>Recibirás los datos bancarios por email</small></div>
+                </label>
+                <label 
+                    className={`payment-option ${data.metodo === 'Efectivo en Academia' ? 'selected' : ''}`}
+                    onClick={() => setData({...data, metodo:'Efectivo en Academia'})}
+                >
+                    <input type="radio" name="pay" checked={data.metodo === 'Efectivo en Academia'} readOnly className="radio-custom" />
+                    <div><strong>Efectivo en Academia</strong><br/><small style={{color:'#6b7280'}}>Pago presencial en horario de atención</small></div>
+                </label>
+            </div>
+
+            <div style={{display:'flex', gap:'10px'}}>
+                <button className="btn-back" onClick={() => setStep(1)} style={{flex: 1}}>Atrás</button>
+                <button className="btn-next" onClick={handleConfirm} disabled={loading} style={{flex: 1}}>
+                    {loading ? 'Confirmando...' : 'Confirmar Reserva'}
                 </button>
-            </form>
+            </div>
+        </>
+    );
+
+    // Paso 3: Confirmación
+    const renderStep3 = () => (
+        <div className="success-card-content">
+            <div className="check-icon">✓</div>
+            <h2 className="success-text">¡Reserva Confirmada!</h2>
+
+            <div className="order-detail-box">
+                {/* Número de Orden (DANZA2025-XXXX) */}
+                <div className="order-number">{order.id}</div> 
+                <small className="order-label">Número de Orden</small>
+                
+                <div className="detail-row"><span className="detail-key">Comprador:</span> <span>{data.nombre}</span></div>
+                <div className="detail-row"><span className="detail-key">Email:</span> <span>{data.email}</span></div>
+                <div className="detail-row"><span className="detail-key">Tickets:</span> <span>{data.cantidad}</span></div>
+                <div className="detail-row"><span className="detail-key">Total:</span> <span>${order.monto_total.toLocaleString('es-CL')}</span></div>
+                <div className="detail-row"><span className="detail-key">Método:</span> <span>{data.metodo}</span></div>
+            </div>
+
+            <div className="warning-payment">
+                <strong>⏰ Tiempo para pagar: 48 horas</strong><br/>
+                Hemos enviado las instrucciones de pago a tu email
+            </div>
+            
+            <button className="btn-next" style={{marginTop:'20px'}} onClick={() => onNavigate('dashboard')}>Volver al Inicio</button>
+        </div>
+    );
+
+
+    return (
+        <div className="reserva-layout">
+            <div className="portal-header">
+                <span className="portal-title">Portal de Compra</span>
+                <button className="btn-home" onClick={() => onNavigate('dashboard')}>🏠 Inicio</button>
+            </div>
+
+            <div className="portal-content">
+                <EventInfoCard />
+                <Stepper />
+
+                <div className="form-card">
+                    {step === 1 && renderStep1()}
+                    {step === 2 && renderStep2()}
+                    {step === 3 && renderStep3()}
+                </div>
+            </div>
         </div>
     );
 };

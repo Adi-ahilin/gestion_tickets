@@ -3,13 +3,24 @@ import { validateTicketSimulated } from '../../api/adminApi';
 import '../../styles/pages/AccessScanner.css';
 
 const AccessScanner = ({ onNavigate }) => {
-    const [scanResult, setScanResult] = useState(null);
-    const [manualCode, setManualCode] = useState('');
+    const [result, setResult] = useState(null);
+    const [manual, setManual] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSimulation = async (type) => {
-        setScanResult(null);
-        const result = await validateTicketSimulated(type);
-        setScanResult(result);
+    const runSimulation = async (type) => {
+        setLoading(true);
+        setResult(null);
+        
+        try {
+            // Llama a la función de la API que simula el resultado del escaneo
+            const res = await validateTicketSimulated(type);
+            setResult(res);
+        } catch (error) {
+            console.error("Error en la simulación del ticket:", error);
+            setResult({ status: 'ERROR', message: 'Fallo de conexión en la simulación' });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -19,43 +30,46 @@ const AccessScanner = ({ onNavigate }) => {
                 <button className="btn-home" onClick={() => onNavigate('dashboard')}>🏠 Inicio</button>
             </div>
 
-            <div className="scanner-content">
-                {/* Tarjeta de Asistencia */}
-                <div className="attendance-card">
-                    <div className="attendance-label">Asistentes Ingresados</div>
-                    <div className="attendance-count">7 / 9</div>
-                    <div className="attendance-label">78% de asistencia</div>
+            <div className="scanner-body">
+                {/* Tarjeta de Estadísticas (Asistentes Ingresados) */}
+                <div className="card-box">
+                    <div className="count-label">Asistentes Ingresados</div>
+                    <div className="count-display">9 / 9</div>
+                    <div className="count-label">100% de asistencia</div>
                 </div>
 
-                {/* Tarjeta de Cámara y Botones */}
-                <div className="camera-card">
-                    <div className="camera-icon">📷</div>
-                    <h3 className="camera-title">Escanear Código QR</h3>
-                    <p className="camera-desc">Acerca el ticket al lector o usa la cámara</p>
+                {/* Tarjeta de Escaneo y Botones de Simulación */}
+                <div className="card-box">
+                    <div className="camera-placeholder">📷</div>
+                    <h3 className="camera-text">Escanear Código QR</h3>
+                    <p className="camera-sub">Acerca el ticket al lector o usa la cámara</p>
+                    
+                    {/* Botones de Simulación */}
+                    <button className="btn-sim sim-valid" onClick={() => runSimulation('valid')} disabled={loading}>Simular: Ticket Válido</button>
+                    <button className="btn-sim sim-used" onClick={() => runSimulation('used')} disabled={loading}>Simular: Ticket Ya Usado</button>
+                    <button className="btn-sim sim-invalid" onClick={() => runSimulation('invalid')} disabled={loading}>Simular: Ticket Inválido</button>
 
-                    <div className="simulation-buttons">
-                        <button className="btn-sim sim-valid" onClick={() => handleSimulation('valid')}>Simular: Ticket Válido</button>
-                        <button className="btn-sim sim-used" onClick={() => handleSimulation('used')}>Simular: Ticket Ya Usado</button>
-                        <button className="btn-sim sim-invalid" onClick={() => handleSimulation('invalid')}>Simular: Ticket Inválido</button>
-                    </div>
-
-                    {scanResult && (
-                        <div className="scan-result-box" style={{
-                            backgroundColor: scanResult.status === 'VÁLIDO' ? '#dcfce7' : scanResult.status === 'YA USADO' ? '#fef3c7' : '#fee2e2',
-                            color: scanResult.status === 'VÁLIDO' ? '#166534' : scanResult.status === 'YA USADO' ? '#92400e' : '#991b1b'
+                    {/* Mostrar Resultado del Escaneo */}
+                    {result && (
+                        <div className="result-msg" style={{
+                            backgroundColor: result.status === 'VÁLIDO' ? '#dcfce7' : result.status === 'YA USADO' ? '#fef3c7' : '#fee2e2',
+                            color: result.status === 'VÁLIDO' ? '#166534' : result.status === 'YA USADO' ? '#92400e' : result.status === 'ERROR' ? '#991b1b' : '#991b1b'
                         }}>
-                            <div style={{fontSize:'1.2rem'}}>{scanResult.status}</div>
-                            <div>{scanResult.message}</div>
+                            <div style={{fontSize:'1.3rem'}}>{result.status}</div>
+                            <div>{result.message}</div>
+                            {result.primer_uso && <div style={{fontSize:'0.8rem', marginTop:'5px'}}>Primer uso: {result.primer_uso}</div>}
                         </div>
                     )}
                 </div>
 
                 {/* Búsqueda Manual */}
-                <div className="manual-search">
-                    <label className="search-label">Búsqueda Manual de Emergencia</label>
-                    <div className="search-row">
-                        <input className="manual-input" placeholder="Buscar por orden o email..." value={manualCode} onChange={e => setManualCode(e.target.value)} />
-                        <button className="btn-manual">🔍</button>
+                <div className="card-box">
+                    <div className="manual-search-box">
+                        <label className="manual-label">Búsqueda Manual de Emergencia</label>
+                        <div className="manual-row">
+                            <input className="manual-input" placeholder="Buscar por orden o email..." value={manual} onChange={e => setManual(e.target.value)} />
+                            <button className="manual-btn" disabled={loading}>🔍</button>
+                        </div>
                     </div>
                 </div>
             </div>
