@@ -28,5 +28,5 @@ export const PRECIO_GENERAL = 6000;
 export const FECHA_LIMITE_PREVENTA = new Date('2025-12-18T23:59:59'); 
 
 // Datos informativos del evento para mostrar en el Portal
-export const FECHA_EVENTO = "18 Diciembre 2025";
+export const FECHA_EVENTO = "22 Diciembre 2025";
 export const HORA_EVENTO = "20:00 hrs";
