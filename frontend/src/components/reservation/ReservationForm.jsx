@@ -9,25 +9,17 @@ const ReservationForm = ({ onNavigate }) => {
     const [data, setData] = useState({ 
         nombre: '', 
         email: '', 
-        cantidad: 1, // Inicializado como número
+        cantidad: 1, 
         metodo: 'Transferencia Bancaria'
     });
-    const [order, setOrder] = useState(null); 
+    const [order, setOrder] = useState(null); // Almacena la orden confirmada por la API
     const [loading, setLoading] = useState(false); 
 
     // Lógica de negocio
     const precio = getCurrentTicketPrice();
     const isPreventa = precio === PRECIO_PREVENTA;
+    // El cálculo del total a pagar es correcto
     const totalPagar = data.cantidad * precio; 
-
-    const handleChange = (e) => {
-        const { value, name } = e.target;
-        setData(prev => ({
-            ...prev,
-            [name]: name === 'cantidad' ? parseInt(value) : value // Aseguramos que 'cantidad' sea entero
-        }));
-    };
-
 
     const handleNext = () => {
         // Validación básica para el paso 1
@@ -41,9 +33,17 @@ const ReservationForm = ({ onNavigate }) => {
     const handleConfirm = async () => {
         setLoading(true);
         try {
-            // Llama a la API (que ahora es robusta)
+            // Llama a la API (createOrder ya fue corregida para devolver un monto_total numérico)
             const newOrder = await createOrder(data);
-            setOrder(newOrder);
+            
+            // AÑADIDO: Aseguramos que la fecha de creación esté presente para mostrarla
+            // Si la API no devuelve fecha_creacion, usamos la fecha actual
+            const orderWithDate = {
+                ...newOrder,
+                fecha_creacion: newOrder.fecha_creacion || new Date()
+            };
+            
+            setOrder(orderWithDate);
             setStep(3); // Pasa al paso de confirmación exitosa
         } catch (error) {
             console.error("Error al confirmar reserva:", error);
@@ -66,7 +66,7 @@ const ReservationForm = ({ onNavigate }) => {
             {isPreventa && (
                 <div className="preventa-alert">
                     <strong>🎉 ¡Preventa Activa!</strong><br/>
-                    Precio especial: ${precio.toLocaleString('es-CL')} hasta el 10/12/2025
+                    Precio especial: ${precio.toLocaleString('es-CL')} hasta el 18/12/2025
                 </div>
             )}
         </div>
@@ -87,13 +87,13 @@ const ReservationForm = ({ onNavigate }) => {
         <>
             <h3 className="form-title">Datos del Comprador</h3>
             <label className="input-label">Nombre y Apellido *</label>
-            <input className="input-control" name="nombre" placeholder="Ej: María González" value={data.nombre} onChange={handleChange} />
+            <input className="input-control" placeholder="Ej: María González" value={data.nombre} onChange={e => setData({...data, nombre: e.target.value})} />
             
             <label className="input-label">Email *</label>
-            <input className="input-control" name="email" type="email" placeholder="correo@ejemplo.com" value={data.email} onChange={handleChange} />
+            <input className="input-control" type="email" placeholder="correo@ejemplo.com" value={data.email} onChange={e => setData({...data, email: e.target.value})} />
             
             <label className="input-label">Cantidad de Tickets *</label>
-            <select className="input-control" name="cantidad" value={data.cantidad} onChange={handleChange}>
+            <select className="input-control" value={data.cantidad} onChange={e => setData({...data, cantidad: parseInt(e.target.value)})}>
                 {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} ticket(s)</option>)}
             </select>
             
@@ -151,6 +151,8 @@ const ReservationForm = ({ onNavigate }) => {
                 <div className="detail-row"><span className="detail-key">Tickets:</span> <span>{data.cantidad}</span></div>
                 <div className="detail-row"><span className="detail-key">Total:</span> <span>${order.monto_total.toLocaleString('es-CL')}</span></div>
                 <div className="detail-row"><span className="detail-key">Método:</span> <span>{data.metodo}</span></div>
+                {/* MOSTRAR FECHA DE COMPRA */}
+                <div className="detail-row"><span className="detail-key">Fecha:</span> <span>{new Date(order.fecha_creacion).toLocaleString('es-CL')}</span></div>
             </div>
 
             <div className="warning-payment">

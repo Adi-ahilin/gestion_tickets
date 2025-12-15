@@ -281,3 +281,38 @@
     font-size: 0.9rem; 
     margin-top: 20px; 
 }
+
+/* ===============================
+   ESTADOS DE ORDEN (BADGES)
+================================ */
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+/* 🟡 Pendiente */
+.status-pendiente {
+    background-color: #e5eb96;
+    color: #92400E;
+    border: 1px solid #FCD34D;
+}
+
+/* 🟢 Confirmada / Aceptada */
+.status-confirmada {
+    background-color: #e5eb96;
+    color: #166534;
+    border: 1px solid #4ADE80;
+}
+
+/* 🔴 Rechazada / Cancelada */
+.status-rechazada {
+    background-color: #e5eb96;
+    color: #991B1B;
+    border: 1px solid #F87171;
+}
