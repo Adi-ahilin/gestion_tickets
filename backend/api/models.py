@@ -81,15 +81,14 @@ class Ticket(models.Model):
     
     # El hash único para el QR. unique=True asegura que no existan dos QRs iguales.
     codigo_qr_hash = models.CharField(max_length=255, unique=True)
-    
     # Datos del asistente real (puede ser distinto al comprador)
     asistente_nombre = models.CharField(max_length=100)
     asistente_apellido = models.CharField(max_length=100)
-    
     estado = models.CharField(max_length=20, choices=ESTADOS_TICKET, default='VIGENTE')
     
     # Se llena solo cuando el Portero escanea el QR.
     fecha_uso = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Ticket {self.id} - {self.asistente_nombre}"
+        # Agregamos el apellido aquí también para que se vea completo en todas partes
+        return f"Ticket {self.id} - {self.asistente_nombre} {self.asistente_apellido}"

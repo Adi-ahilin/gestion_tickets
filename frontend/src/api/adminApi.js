@@ -23,12 +23,13 @@ export const getAllOrders = async () => {
         return data.map(orden => ({
             id: orden.id,
 
-            // Comprador anidado (serializer.py confirmado)
+            // Comprador anidado
             comprador: orden.comprador
                 ? `${orden.comprador.nombre} ${orden.comprador.apellido}`
                 : 'Cliente Web',
 
             email: orden.comprador?.email ?? 'Sin Email',
+            telefono: orden.comprador?.telefono ?? 'Sin Teléfono',
 
             // Cantidad real de tickets
             cantidad_tickets: Array.isArray(orden.tickets)
@@ -38,37 +39,18 @@ export const getAllOrders = async () => {
             monto_total: Number(orden.total ?? 0),
 
             estado: orden.estado,
-            fecha_creacion: orden.fecha_creacion
+
+            // --- CORRECCIÓN 1: FECHA ---
+            // Usamos 'fecha_orden' que es el nombre real en Django (models.py)
+            fecha_creacion: orden.fecha_orden, 
+
+            // --- CORRECCIÓN 2: MÉTODO DE PAGO ---
+            // Como el backend no guarda esto, asumimos "Transferencia" para la vista
+            metodo_pago: 'Transferencia Bancaria'
         }));
     } catch (error) {
-        console.error('❌ Error cargando órdenes:', error);
+        console.error("Error en getAllOrders:", error);
         return [];
-    }
-};
-
-// --------------------------------------------------
-// CONFIRMAR PAGO DE UNA ORDEN
-// --------------------------------------------------
-export const confirmPayment = async (orderId) => {
-    try {
-        const response = await fetch(
-            `${API_URL}/ordenes/${orderId}/confirmar/`,
-            {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error('Error al confirmar pago');
-        }
-
-        return true;
-    } catch (error) {
-        console.error('❌ Error confirmando pago:', error);
-        return false;
     }
 };
 
@@ -76,10 +58,11 @@ export const confirmPayment = async (orderId) => {
 // ESTADÍSTICAS DEL DASHBOARD
 // --------------------------------------------------
 export const getDashboardStats = async () => {
+    // Capacidad total del evento (dato fijo para el cálculo)
+    const TOTAL_CAPACIDAD = 200; 
+
     const orders = await getAllOrders();
-
-    const TOTAL_CAPACIDAD = 250;
-
+    
     let vendidas = 0;
     let pendientes = 0;
     let ingresos = 0;
@@ -96,10 +79,10 @@ export const getDashboardStats = async () => {
     });
 
     return {
-        vendidas,
-        pendientes,
-        disponibles: TOTAL_CAPACIDAD - ticketsOcupados,
-        ingresos
+        vendidas, // Órdenes confirmadas
+        pendientes, // Órdenes pendientes
+        disponibles: TOTAL_CAPACIDAD - ticketsOcupados, // Asientos libres
+        ingresos // Dinero recaudado
     };
 };
 
@@ -115,19 +98,46 @@ export const findOrders = async (query) => {
 
     return orders.filter(order =>
         String(order.id).toLowerCase().includes(lowerQuery) ||
-        String(order.email).toLowerCase().includes(lowerQuery)
+        String(order.email).toLowerCase().includes(lowerQuery) ||
+        String(order.comprador).toLowerCase().includes(lowerQuery)
     );
 };
 
 // --------------------------------------------------
-// PLACEHOLDER (EVITA ERRORES EN OTRAS VISTAS)
+// CONFIRMAR PAGO
+// --------------------------------------------------
+export const confirmPayment = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/ordenes/${id}/confirmar/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al confirmar pago');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error("Error en confirmPayment:", error);
+        throw error;
+    }
+};
+
+// --------------------------------------------------
+// SIMULACIÓN DE ESCÁNER (PLACEHOLDER)
 // --------------------------------------------------
 export const validateTicketSimulated = async (type) => {
+    // Simulamos un retraso de red de 0.5 segundos para realismo
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const responses = {
-        valid:   { status: 'VÁLIDO',   message: 'Ticket aceptado. ¡Bienvenido!' },
-        used:    { status: 'YA USADO', message: 'Este ticket ya fue utilizado.' },
-        invalid: { status: 'INVÁLIDO', message: 'Ticket no válido o expirado.' }
+        valid:   { status: 'VÁLIDO',   message: 'Ticket aceptado. ¡Bienvenido!', primer_uso: null },
+        used:    { status: 'YA USADO', message: 'Este ticket ya fue utilizado.', primer_uso: '12/12/2025 18:30' },
+        invalid: { status: 'INVÁLIDO', message: 'Ticket no reconocido en el sistema.', primer_uso: null }
     };
-    // normaliza entrada y retorna la respuesta simulada
+
     return responses[type] || responses.invalid;
 };

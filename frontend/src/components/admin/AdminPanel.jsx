@@ -68,7 +68,14 @@ const AdminPanel = ({ onNavigate }) => {
                     <div className="table-wrap">
                         <table className="orders-table">
                             <thead>
-                                <tr><th>ID Orden</th><th>Comprador</th><th>Email</th><th>Tickets</th><th>Total</th><th>Estado</th><th>Acción</th></tr>
+                                <tr><th>ID Orden</th>
+                                <th>Comprador</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Tickets</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acción</th></tr>
                             </thead>
                             <tbody>
                                 {orders.length > 0 ? (
@@ -77,6 +84,7 @@ const AdminPanel = ({ onNavigate }) => {
                                             <td style={{fontWeight:'bold'}}>{order.id}</td>
                                             <td>{order.comprador || order.nombre}</td>
                                             <td>{order.email}</td>
+                                            <td>{order.telefono}</td>
                                             <td>{order.cantidad_tickets || order.cantidad}</td>
                                             <td style={{fontWeight:'bold'}}>${parseFloat(order.monto_total).toLocaleString('es-CL')}</td>
                                             <td><span className={`badge ${order.estado === EstadoOrden.PENDIENTE ? 'badge-p' : 'badge-c'}`}>{order.estado}</span></td>
@@ -109,6 +117,7 @@ const AdminPanel = ({ onNavigate }) => {
                             <div className="detail-item"><strong>ID:</strong> {selectedOrder.id}</div>
                             <div className="detail-item"><strong>Comprador:</strong> {selectedOrder.comprador || selectedOrder.nombre}</div>
                             <div className="detail-item"><strong>Email:</strong> {selectedOrder.email}</div>
+                            <div className="detail-item"><strong>Teléfono:</strong> {selectedOrder.telefono}</div>
                             <div className="detail-item"><strong>Tickets:</strong> {selectedOrder.cantidad_tickets || selectedOrder.cantidad}</div>
                             <div className="detail-item"><strong>Total:</strong> ${parseFloat(selectedOrder.monto_total).toLocaleString('es-CL')}</div>
                             <div className="detail-item"><strong>Método de Pago:</strong> {selectedOrder.metodo_pago || selectedOrder.metodo || 'No especificado'}</div>

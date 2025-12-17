@@ -13,25 +13,19 @@ export const createOrder = async (data) => {
     console.log("🚀 Iniciando creación de orden...", data);
 
     try {
-        // 1. ADAPTACIÓN DE DATOS (Frontend -> Backend)
-        // Django pide nombre y apellido separados, pero el form solo da uno.
-        const nombreCompleto = data.nombre.split(" ");
-        const nombre = nombreCompleto[0];
-        const apellido = nombreCompleto.slice(1).join(" ") || "SinApellido";
-
-        // Preparamos el paquete exacto que pide tu views.py
+        
         const paqueteParaDjango = {
-            nombre: nombre,
-            apellido: apellido,
+            nombre: data.nombre,       // Usamos el nombre real
+            apellido: data.apellido,   // Usamos el apellido real
             email: data.email,
-            telefono: "00000000", // Valor por defecto porque el form no pide teléfono
-            cantidad: parseInt(data.cantidad) // Django pide 'cantidad', React tenía 'cantidad' (antes era cantidad_tickets en versiones previas, pero el componente actual usa 'cantidad')
+            telefono: data.telefono,      // Valor por defecto
+            cantidad: parseInt(data.cantidad)
         };
+        // -----------------------
 
         console.log("📦 Enviando a Django:", paqueteParaDjango);
 
-        // 2. LLAMADA AL SERVIDOR
-        // Usamos '/reservar/' porque así está definido en tu urls.py
+        // 2. PETICIÓN POST AL BACKEND
         const response = await fetch(`${API_URL}/reservar/`, { 
             method: 'POST',
             headers: { 
@@ -41,10 +35,8 @@ export const createOrder = async (data) => {
             body: JSON.stringify(paqueteParaDjango)
         });
 
-        // 3. MANEJO DE ERRORES ROBUSTO
+        // 3. MANEJO DE ERRORES
         if (!response.ok) {
-
-            
             const textBody = await response.text(); 
             let errorData;
             try {
@@ -59,16 +51,13 @@ export const createOrder = async (data) => {
         const result = await response.json();
         console.log("✅ Éxito:", result);
         
-        // Adaptamos la respuesta del backend para que el frontend la entienda
-        // El frontend espera 'monto_total' y 'id', asegúrate de que 'result' los tenga o adáptalos aquí.
         return {
             ...result,
-            // Si el backend devuelve 'monto_total', úsalo, sino calcúlalo o usa un valor por defecto si es necesario para la vista
             monto_total: result.monto_total || (paqueteParaDjango.cantidad * getCurrentTicketPrice())
         };
 
     } catch (error) {
-        console.error("💥 Error en createOrder:", error);
+        console.error("🚨 Error en createOrder:", error);
         throw error;
     }
 };

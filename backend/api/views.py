@@ -5,102 +5,66 @@ from .models import Comprador, OrdenCompra, Ticket
 from .serializers import CrearReservaSerializer, OrdenCompraSerializer
 import uuid
 
-# Configuración de Precios (Podrías mover esto a variables de entorno luego)
+# Configuración de Precios
 PRECIO_PREVENTA = 4500
 PRECIO_GENERAL = 6000
-FECHA_FIN_PREVENTA = "2025-12-10" # Ejemplo
+FECHA_FIN_PREVENTA = "2025-12-10" 
 
-@api_view(['POST']) # Solo permitimos enviar datos (POST), no leer (GET)
+@api_view(['POST'])
 def crear_orden(request):
-    # 1. Pasamos los datos de Carlos por el "Portero" (Serializer)
+    # 1. Validar datos entrantes
     serializer = CrearReservaSerializer(data=request.data)
     
-    # 2. Si los datos están mal (ej: email inválido), devolvemos error al tiro
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # 3. Si todo está bien, extraemos los datos limpios
     datos = serializer.validated_data
+    nombre = datos['nombre']
+    apellido = datos['apellido']  # <--- CORRECCIÓN 1: Capturamos el apellido
+    email = datos['email']
+    telefono = datos['telefono']
     cantidad = datos['cantidad']
     
-    # ---------------------------------------------------
-    # LÓGICA DE NEGOCIO (Cálculos)
-    # ---------------------------------------------------
+    # 2. Crear o Actualizar Comprador
+    # Esto busca por email. Si existe, actualiza nombre/apellido/teléfono. Si no, lo crea.
+    comprador, created = Comprador.objects.update_or_create(
+        email=email,
+        defaults={
+            'nombre': nombre,
+            'apellido': apellido, # <--- CORRECCIÓN 2: Guardamos el apellido en la BD
+            'telefono': telefono
+        }
+    )
+
+    # 3. Crear la Orden de Compra
+    total_a_pagar = cantidad * PRECIO_PREVENTA 
     
-    # Aquí podríamos comparar fechas real, por ahora usaremos precio preventa fijo
-    # para el PMV Sprint 1.
-    precio_unitario = PRECIO_PREVENTA 
-    total_a_pagar = precio_unitario * cantidad
+    orden = OrdenCompra.objects.create(
+        comprador=comprador,
+        total=total_a_pagar,
+        estado='PENDIENTE'
+    )
 
-    try:
-        # 4. Crear o buscar el Comprador
-        # get_or_create sirve por si el cliente ya compró antes, no duplicarlo
-        comprador, created = Comprador.objects.get_or_create(
-            email=datos['email'],
-            defaults={
-                'nombre': datos['nombre'],
-                'apellido': datos['apellido'],
-                'telefono': datos['telefono']
-            }
+    # 4. Crear los Tickets
+    for _ in range(cantidad):
+        Ticket.objects.create(
+            orden=orden,
+            codigo_qr_hash=str(uuid.uuid4()),
+            asistente_nombre=nombre,
+            asistente_apellido=apellido, # <--- CORRECCIÓN 3: El ticket ahora tiene apellido
+            estado='VIGENTE'
         )
 
-        # 5. Crear la Orden de Compra
-        orden = OrdenCompra.objects.create(
-            comprador=comprador,
-            total=total_a_pagar,
-            estado='PENDIENTE'
-        )
-
-        # 6. Crear los Tickets (Bucle según cantidad)
-        for i in range(cantidad):
-            Ticket.objects.create(
-                orden=orden,
-                asistente_nombre=datos['nombre'], # Por defecto ponemos el nombre del comprador
-                asistente_apellido=datos['apellido'],
-                # Generamos un hash único combinando el ID de la orden y el número de ticket
-                codigo_qr_hash=str(uuid.uuid4()) 
-            )
-
-        # 7. Respuesta Exitosa
-        # Devolvemos la orden creada usando el Serializador de Salida
-        orden_serializada = OrdenCompraSerializer(orden)
-        
-        return Response({
-            "mensaje": "Orden creada exitosamente",
-            "datos": orden_serializada.data
-        }, status=status.HTTP_201_CREATED)
-
-    except Exception as e:
-        # Si algo falla en la base de datos (ej: base de datos caída)
-        return Response(
-            {"error": str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    # --- Agrega esto al final de backend/api/views.py ---
+    # 5. Responder
+    return Response({
+        'mensaje': 'Orden creada exitosamente',
+        'id': orden.id,
+        'total': total_a_pagar,
+        'cantidad_tickets': cantidad
+    }, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
 def listar_ordenes(request):
-    # Traemos todas las órdenes, las más nuevas primero
-    ordenes = OrdenCompra.objects.all().order_by('-id') 
-    serializer = OrdenCompraSerializer(ordenes, many=True)
-    return Response(serializer.data)
-
-@api_view(['POST'])
-def confirmar_pago(request, orden_id):
-    try:
-        # Buscamos la orden por su ID
-        orden = OrdenCompra.objects.get(id=orden_id)
-        orden.estado = 'CONFIRMADA' # Asegúrate que este string coincida con tus modelos
-        orden.save()
-        return Response({'mensaje': 'Pago confirmado exitosamente'})
-    except OrdenCompra.DoesNotExist:
-        return Response({'error': 'Orden no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-    
-# --- Pega esto al final de backend/api/views.py ---
-
-@api_view(['GET'])
-def listar_ordenes(request):
-    # Trae todas las órdenes, las más nuevas primero
     ordenes = OrdenCompra.objects.all().order_by('-id') 
     serializer = OrdenCompraSerializer(ordenes, many=True)
     return Response(serializer.data)
@@ -109,7 +73,7 @@ def listar_ordenes(request):
 def confirmar_pago(request, orden_id):
     try:
         orden = OrdenCompra.objects.get(id=orden_id)
-        orden.estado = 'CONFIRMADA' 
+        orden.estado = 'CONFIRMADA'
         orden.save()
         return Response({'mensaje': 'Pago confirmado exitosamente'})
     except OrdenCompra.DoesNotExist:
