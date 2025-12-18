@@ -22,8 +22,7 @@ export const useReservation = () => {
     // --- MANEJADORES DE INPUTS ---
     const handlePhoneChange = (e) => {
         const valor = e.target.value;
-        // Tu lógica de validación estricta (solo números, max 8)
-        if (/^[0-9]*$/.test(valor) && valor.length <= 8) {
+        if (/^[0-9]*$/.test(valor) && valor.length <= 9) {
             setData({ ...data, telefono: valor });
         }
     };
@@ -47,8 +46,8 @@ export const useReservation = () => {
                 alert("Por favor complete todos los datos obligatorios.");
                 return;
             }
-            if (data.telefono.length !== 8) {
-                alert(`El teléfono debe tener exactamente 8 dígitos. (Actual: ${data.telefono.length})`);
+            if (data.telefono.length !== 9) {
+                alert(`El teléfono debe tener exactamente 9 dígitos. (Actual: ${data.telefono.length})`);
                 return;
             }
             if (!data.email.includes('@')) {

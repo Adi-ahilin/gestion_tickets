@@ -17,8 +17,8 @@ const Step1BuyerData = ({ data, handleText, handlePhone, handleChange, totalPaga
             <input className="input-control" type="email" placeholder="correo@ejemplo.com" value={data.email} 
                    onChange={(e) => handleChange('email', e.target.value)} />
 
-            <label className="input-label">Teléfono (8 dígitos) *</label>
-            <input className="input-control" type="tel" placeholder="Ej: 12345678" value={data.telefono} 
+            <label className="input-label">Teléfono (9 dígitos) *</label>
+            <input className="input-control" type="tel" placeholder="Ej: 912345678" value={data.telefono} 
                    onChange={handlePhone} />
 
             <label className="input-label">Cantidad de Tickets *</label>
